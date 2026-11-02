@@ -1,0 +1,4 @@
+{"text": "short text", "label": "pos", "prediction": "pos", "source": "A"}
+{"text": "short text", "label": "pos", "prediction": "pos", "source": "A"}
+{"text": "longer sentence here", "label": "neg", "prediction": "neg", "source": "B"}
+{"text": "another long one", "label": "neg", "prediction": "pos", "source": "B"}

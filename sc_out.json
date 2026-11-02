@@ -1,0 +1,24 @@
+{
+  "n": 4,
+  "model_accuracy": 0.75,
+  "majority_baseline_accuracy": 0.5,
+  "class_imbalance_ratio": 0.5,
+  "majority_class": "neg",
+  "feature_mi": [
+    [
+      "source",
+      0.0
+    ]
+  ],
+  "subgroup_gaps": [
+    [
+      "source",
+      0.5
+    ]
+  ],
+  "single_feature_shortcuts": [],
+  "length_label_corr": -0.2722,
+  "flags": [
+    "subgroup_performance_gap: 'source' gap=0.50"
+  ]
+}
