@@ -85,11 +85,25 @@ class NgramDetector(BaseDetector):
                 return 1.0
             return 1.0 / (1.0 + df.get(g, 0))
 
+        # inverted index: n-gram -> list of train indices (performance)
+        inv: dict[tuple[str, ...], list[int]] = {}
+        for ti, tg in enumerate(train_grams):
+            for g in tg:
+                inv.setdefault(g, []).append(ti)
+
         matches: list[ContaminationMatch] = []
         for ei, eg in enumerate(eval_grams):
             if not eg:
                 continue
-            for ti, tg in enumerate(train_grams):
+            # candidate train indices sharing at least one n-gram
+            cand_counter: Counter[int] = Counter()
+            for g in eg:
+                for ti in inv.get(g, ()):
+                    cand_counter[ti] += 1
+            for ti in cand_counter:
+                if cand_counter[ti] < self.min_shared:
+                    continue
+                tg = train_grams[ti]
                 if not tg:
                     continue
                 shared = eg & tg

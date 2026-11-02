@@ -47,7 +47,7 @@ def main() -> None:
               help="Path to train corpus (jsonl/csv/json).")
 @click.option("--eval", "eval_path", required=True, type=click.Path(exists=True),
               help="Path to eval corpus (jsonl/csv/json).")
-@click.option("--detector", type=click.Choice(["ngram", "semantic", "all"]), default="all")
+@click.option("--detector", type=click.Choice(["ngram", "tfidf", "semantic", "all"]), default="all")
 @click.option("--threshold", type=float, default=None, help="Override detector threshold.")
 @click.option("--n", type=int, default=5, help="N-gram size.")
 @click.option("--min-shared", type=int, default=3, help="Minimum shared n-grams.")
@@ -74,6 +74,10 @@ def audit(train_path: str, eval_path: str, detector: str, threshold: float | Non
     if detector in ("ngram", "all"):
         detectors_to_run.append(NgramDetector(n=n, threshold=t if detector == "ngram" else 0.3,
                                              min_shared=min_shared, use_idf=use_idf))
+    if detector in ("tfidf", "all"):
+        from .detectors.tfidf import TfidfDetector
+
+        detectors_to_run.append(TfidfDetector(threshold=t if detector == "tfidf" else 0.5))
     if detector in ("semantic", "all"):
         try:
             from .detectors.semantic import SemanticDetector
@@ -207,6 +211,32 @@ def graph(input_path: str, output_path: str | None) -> None:
     console.print_json(data=summary.to_dict())
     if output_path:
         Path(output_path).write_text(_json.dumps(payload, indent=2), encoding="utf-8")
+        console.print(f"[green]Wrote {output_path}[/green]")
+
+
+@main.command("audit-hf")
+@click.option("--train-dataset", required=True, help="HuggingFace train dataset name.")
+@click.option("--eval-dataset", required=True, help="HuggingFace eval/benchmark dataset name.")
+@click.option("--train-split", default="train")
+@click.option("--eval-split", default="test")
+@click.option("--text-col", default="text")
+@click.option("--limit", type=int, default=200)
+@click.option("--output", "output_path", type=click.Path(), default=None)
+def audit_hf(train_dataset: str, eval_dataset: str, train_split: str, eval_split: str,
+             text_col: str, limit: int, output_path: str | None) -> None:
+    """Audit a HuggingFace dataset pair for benchmark contamination."""
+    try:
+        from .hf_audit import audit_hf_dataset
+    except Exception as exc:
+        raise click.ClickException(str(exc)) from exc
+    try:
+        payload = audit_hf_dataset(train_dataset, eval_dataset, train_split=train_split,
+                                  eval_split=eval_split, text_col=text_col, limit=limit)
+    except Exception as exc:
+        raise click.ClickException(str(exc)) from exc
+    console.print_json(data=payload["result"])
+    if output_path:
+        Path(output_path).write_text(json.dumps(payload, indent=2), encoding="utf-8")
         console.print(f"[green]Wrote {output_path}[/green]")
 
 

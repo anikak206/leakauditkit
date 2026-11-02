@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field, field_validator
 
 
 class DetectorConfig(BaseModel):
-    name: Literal["ngram", "semantic", "all"] = "all"
+    name: Literal["ngram", "tfidf", "semantic", "all"] = "all"
     threshold: float = Field(default=0.3, ge=0.0, le=1.0)
     n: int = Field(default=5, ge=1)
     min_shared: int = Field(default=3, ge=1)

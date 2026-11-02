@@ -97,6 +97,33 @@ def write_html(result: Any, path: Path) -> Path:
             f"<tr><td>{m['eval_id']}</td><td>{m['train_id']}</td>"
             f"<td>{m['score']}</td><td><code>{ev}</code></td></tr>"
         )
+    # try interactive plotly report
+    try:
+        import plotly.graph_objects as go
+        import plotly.io as pio
+
+        scores = [m["score"] for m in d.get("matches", [])[:50]]
+        labels = [m["eval_id"] for m in d.get("matches", [])[:50]]
+        fig = go.Figure(data=[go.Bar(x=labels, y=scores, marker_color="#c0392b")])
+        fig.update_layout(title=f"{d['detector']} — match scores",
+                          xaxis_title="eval id", yaxis_title="score",
+                          template="plotly_white")
+        chart = pio.to_html(fig, full_html=False, include_plotlyjs="cdn")
+        html = (_HTML_TEMPLATE
+                .replace("__N_TRAIN__", str(d["n_train"]))
+                .replace("__N_EVAL__", str(d["n_eval"]))
+                .replace("__N_CONTAM__", str(len({m["eval_id"] for m in d.get("matches", [])})))
+                .replace("__RATE_PCT__", f"{rate:.1%}")
+                .replace("__RATE_CLS__", rate_cls)
+                .replace("__DETECTOR__", str(d["detector"]))
+                .replace("__THRESHOLD__", str(d["threshold"]))
+                .replace("__N_MATCHES__", str(d["n_matches"]))
+                .replace("__ROWS__", "\n".join(rows) if rows else "<tr><td colspan='4'>No matches above threshold.</td></tr>"))
+        html = html.replace("</body>", chart + "\n</body>")
+        path.write_text(html, encoding="utf-8")
+        return path
+    except Exception:
+        pass
     html = (_HTML_TEMPLATE
             .replace("__N_TRAIN__", str(d["n_train"]))
             .replace("__N_EVAL__", str(d["n_eval"]))

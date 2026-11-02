@@ -2,7 +2,10 @@
 
 > Audit ML/LLM evaluation pipelines for data leakage and shortcut learning.
 
-[![CI](https://github.com/<user>/leakauditkit/actions/workflows/ci.yml/badge.svg)](https://github.com/<user>/leakauditkit/actions)
+[![CI](https://github.com/anikak206/leakauditkit/actions/workflows/ci.yml/badge.svg)](https://github.com/anikak206/leakauditkit/actions)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-41%20passing-brightgreen)](https://github.com/anikak206/leakauditkit)
 
 ## Why
 
@@ -45,7 +48,22 @@ leakaudit audit       --train T --eval E --detector all --format all
 leakaudit benchmark  --output ./bench --n-train 60 --n-eval 60
 leakaudit shortcuts  --input preds.jsonl --text-key text --feature-keys src
 leakaudit graph      --input report.json --output graph.json
+leakaudit audit-hf   --train-dataset org/train --eval-dataset org/bench
 ```
+
+## Detectors
+
+| Detector | Deps | Best for |
+|---|---|---|
+| ngram | none (stdlib) | Verbatim / near-verbatim leakage |
+| tfidf | scikit-learn (core) | Paraphrased leakage, zero heavy deps |
+| semantic | sentence-transformers (optional) | Deep semantic contamination |
+
+## Deployment
+
+- **FastAPI service:** `uvicorn leakauditkit.api:app`
+- **HF Space:** `app.py` (Gradio) — deploy to Hugging Face Spaces
+- **Docker:** `docker build -t leakauditkit .`
 
 ## Architecture
 
